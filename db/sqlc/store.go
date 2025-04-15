@@ -5,15 +5,16 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Store provides all functions to execute db queries and transactions
 type Store struct {
 	*Queries
-	db *pgx.Conn
+	db *pgxpool.Pool
 }
 
-func NewStore(db *pgx.Conn) *Store {
+func NewStore(db *pgxpool.Pool) *Store {
 	return &Store{
 		db:      db,
 		Queries: New(db),
@@ -54,7 +55,7 @@ type TransferTxResult struct {
 }
 
 // TransferTx transfers balance from one account to another.
-func (store *Store) transferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
+func (store *Store) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 	err := store.execTx(ctx, func(q *Queries) error {
 		var tErr error
@@ -63,6 +64,50 @@ func (store *Store) transferTx(ctx context.Context, arg TransferTxParams) (Trans
 			ToAccountID:   arg.ToAccountID,
 			Amount:        arg.Amount,
 		})
+		if tErr != nil {
+			return tErr
+		}
+		result.FromEntry, tErr = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.FromAccountID,
+			Amount:    -arg.Amount,
+		})
+		if tErr != nil {
+			return tErr
+		}
+		result.ToEntry, tErr = q.CreateEntry(ctx, CreateEntryParams{
+			AccountID: arg.ToAccountID,
+			Amount:    arg.Amount,
+		})
+		if tErr != nil {
+			return tErr
+		}
+
+		accountOne, err := q.GetAccountForUpdate(ctx, arg.FromAccountID)
+		if err != nil {
+			return err
+		}
+
+		result.FromAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.FromAccountID,
+			Balance: accountOne.Balance - arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
+		accountTwo, err := q.GetAccountForUpdate(ctx, arg.ToAccountID)
+		if err != nil {
+			return err
+		}
+
+		result.ToAccount, err = q.UpdateAccount(ctx, UpdateAccountParams{
+			ID:      arg.ToAccountID,
+			Balance: accountTwo.Balance + arg.Amount,
+		})
+		if err != nil {
+			return err
+		}
+
 		return tErr
 	})
 
