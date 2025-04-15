@@ -11,4 +11,3 @@ sqlc/ is generated from changes to migration/ and query/.  After modifying them 
 ```
 sqlc generate
 ```
-
