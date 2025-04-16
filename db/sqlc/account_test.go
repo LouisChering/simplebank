@@ -59,12 +59,12 @@ func TestListAccounts(t *testing.T) {
 	}
 	params := ListAccountsParams{
 		Limit:  5,
-		Offset: 5,
+		Offset: 0,
 	}
 	accounts, err := testQueries.ListAccounts(context.Background(), params)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, accounts)
 
-	require.Equal(t, len(accounts), accountSeedAmount)
+	require.Equal(t, accountSeedAmount, len(accounts))
 }
