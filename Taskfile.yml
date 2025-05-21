@@ -3,7 +3,7 @@ version: '3'
 tasks:
   run:
     cmds:
-      - go run main.go
+      - air
   db-up:
     dir: 'db/migration'
     cmds:

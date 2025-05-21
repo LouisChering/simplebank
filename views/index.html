@@ -1,0 +1,79 @@
+{{block "index" .}}
+<!DOCTYPE html>
+
+<head>
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="css/style.css" rel="stylesheet" />
+    <script src="https://unpkg.com/htmx.org/dist/htmx.min.js"></script>
+</head>
+
+<body>
+    {{template "form" .Form}}
+    <hr />
+    {{template "display" .Data}}
+
+    <script>
+    document.addEventListener("DOMContentLoaded", (event)=>{
+        document.body.addEventListener('htmx:beforeSwap', function(evt){
+            evt.detail.shouldSwap = true;
+            evt.detail.isError = false;
+        })
+    })
+    </script>
+
+    <style>
+    .contact.htmx-swapping{
+        opacity:0;
+        transition: opacity 500ms ease-in;
+    }
+    </style>    
+</body>
+
+</html>
+{{end}}
+
+{{block "form".}}
+<form hx-post="contacts" hx-swap="outerHTML">
+    name: <input
+    {{if .Values.name }} value="{{.Values.name}}" {{end}}
+    type="text" name="name" />
+
+    email: <input 
+    {{if .Values.email }} value="{{.Values.email}}" {{end}}
+    type="email" name="email" />
+
+    {{if .Errors.email}}
+    <div style="color:red;">{{.Errors.email}}</div>
+    {{end}}
+
+    <button type="submit">submit</button>
+</form>
+{{end}}
+
+{{ block "display" .}}
+<div id="display">
+    {{range .Contacts}}
+        {{ template "contact" .}}
+    {{end}}
+</div>
+{{end}}
+
+{{ block "contact" .}}
+    <div class="contact" id="contact-{{.Id}}">
+        <span>{{.Name}}</span>
+        <span>{{.Email}}</span>
+        <button hx-indicator="#contact-indicator-{{.Id}}" hx-target="#contact-{{.Id}}" hx-swap="outerHTML swap:500ms" hx-delete="/contacts/{{.Id}}">Delete</button>
+        <div id="contact-indicator-{{.Id}}" class="htmx-indicator">
+            <p>LOADING</p>
+        </div>
+        <hr />
+    </div>
+{{end}}
+
+{{ block "oob-contact" .}}
+    <div id="display" hx-swap-oob="afterbegin">
+        {{template "contact" .}}
+    </div>
+{{end}}
+
