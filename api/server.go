@@ -51,6 +51,7 @@ func NewServer(store db.Store, templateFS *embed.FS) *Server {
 	router.POST("api/accounts", server.createAccount)
 	router.GET("api/accounts/:ID", server.getAccount)
 	router.GET("api/accounts/", server.listAccounts)
+	router.POST("api/transfers", server.createTransfer)
 
 	// router.GET("/", func(c *gin.Context) {
 	// 	formData := FormData{

@@ -1,0 +1,13 @@
+POST http://0.0.0.0:8080/api/transfers
+
+{
+    "from_account_id":10,
+    "to_account_id":11,
+    "amount":10,
+    "currency":"USD"
+}
+
+###
+GET http://0.0.0.0:8080/api/accounts/1
+###
+GET http://0.0.0.0:8080/api/accounts?page_size=5&page_id=1
