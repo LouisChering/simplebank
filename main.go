@@ -30,7 +30,7 @@ func main() {
 	defer dbpool.Close()
 
 	store := db.NewStore(dbpool)
-	server := api.NewServer(store, templateFS)
+	server := api.NewServer(store, &templateFS)
 
 	if err = server.Start(config.ServerAddress); err != nil {
 		fmt.Printf("error: %v", err)

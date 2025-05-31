@@ -16,6 +16,9 @@ tasks:
     dir: 'db'
     cmds:
       - sqlc generate
+  generate-mocks:
+    cmds:
+      - mockgen -package mockdb -destination db/mock/store.go github.com/louischering/simplebank/db/sqlc Store
   from-working-directory:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
